@@ -1,23 +1,39 @@
 import tkinter as tk
-from mouse_detection import MouseTracker
+from pynput import mouse
 
 
+# ---------------- MOUSE TRACKER ----------------
+class MouseTracker:
+    def __init__(self):
+        self.position = (0, 0)
+        self.listener = mouse.Listener(on_move=self.on_move)
+        self.listener.start()
+
+    def on_move(self, x, y):
+        self.position = (x, y)
+
+    def get_position(self):
+        return self.position
+
+
+# ---------------- SMART POPUP ----------------
 class SmartPopup:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Smart Click")
 
+        # 🔥 CRITICAL FIX: prevent macOS activation / focus steal
+        self.root.withdraw()              # MUST be first
         self.root.overrideredirect(True)
-        self.root.attributes("-topmost", True)
 
-        # Initialize as None, but will be set in _build_ui()
-        self.text_box: tk.Text | None = None
-        self.output: tk.Label | None = None
+        self.root.attributes("-topmost", True)
+        self.root.attributes("-alpha", 0.98)
+
+        self.root.update_idletasks()     # stabilize window before showing
+
+        self.text_box = None
+        self.output = None
 
         self._build_ui()
-
-        # start hidden
-        self.root.withdraw()
 
     def _build_ui(self):
         frame = tk.Frame(self.root, bg="#1e1e1e")
@@ -51,19 +67,23 @@ class SmartPopup:
         )
         close_btn.pack(pady=5)
 
+    # ---------------- PUBLIC API ----------------
     def open(self, x, y):
         x, y = int(x), int(y)
 
         self.root.geometry(f"350x200+{x+10}+{y+10}")
 
-        # IMPORTANT: make it visible BEFORE anything else
+        # 🔥 CRITICAL: show WITHOUT activating app
+        self.root.update_idletasks()
+
         self.root.deiconify()
+
+        # force stacking only (NOT focus)
         self.root.lift()
         self.root.attributes("-topmost", True)
 
-        # Ensure text_box is initialized before calling focus_set
-        if self.text_box is not None:
-            self.text_box.focus_set()
+        # re-assert topmost without triggering focus
+        self.root.after(10, lambda: self.root.attributes("-topmost", True))
 
         print(f"[POPUP OPENED] at ({x}, {y})")
 

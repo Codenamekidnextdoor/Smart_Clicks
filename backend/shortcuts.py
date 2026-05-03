@@ -1,30 +1,55 @@
-import keyboard
+from pynput import keyboard
 import threading
-import logging
-
-logger = logging.getLogger(__name__)
+import time
+import platform
 
 class HotkeyManager:
-    def __init__(self, hotkey: str = "ctrl+shift+z"):
-        self.hotkey = hotkey
+    def __init__(self, key="b"):
+        self.key = key
         self.callback = None
-        self._running = False
+        self.listener = None
 
-    def start(self, callback):
-        if self._running:
-            logger.warning("Hotkey listener already running")
-            return
-        self.callback = callback
+        system = platform.system()
 
-        def _threaded():
+        if system == "Darwin":  # macOS
+            self.hotkey = f"<cmd>+<shift>+{self.key}"
+        else:  # Windows/Linux
+            self.hotkey = f"<ctrl>+<shift>+{self.key}"
+
+    def _on_activate(self):
+        if self.callback:
             threading.Thread(target=self.callback, daemon=True).start()
 
-        keyboard.add_hotkey(self.hotkey, _threaded)
-        self._running = True
-        logger.info(f"Hotkey {self.hotkey} registered")
+    def start(self, callback):
+        self.callback = callback
+
+        print(f"[Hotkey Registered] {self.hotkey}")
+
+        self.listener = keyboard.GlobalHotKeys({
+            self.hotkey: self._on_activate
+        })
+
+        self.listener.start()
 
     def stop(self):
-        if self._running:
-            keyboard.remove_hotkey(self.hotkey)
-            self._running = False
-            logger.info("Hotkey unregistered")
+        if self.listener:
+            self.listener.stop()
+
+
+"""# ---------------- TEST ----------------
+if __name__ == "__main__":
+
+    def test_callback():
+        print("\n🔥 SMART CLICK TRIGGERED")
+        print("System working...")
+        time.sleep(1)
+        print("Done.\n")
+
+    manager = HotkeyManager("b")
+    manager.start(test_callback)
+
+    print("Press hotkey (Ctrl/Cmd + Shift + B)")
+    print("Running...")
+
+    while True:
+        time.sleep(1)"""
