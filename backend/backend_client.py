@@ -1,50 +1,22 @@
 import time
 
-from popup_ui import SmartPopup, MouseTracker
+from popup_ui import SmartPopup
 from shortcuts import HotkeyManager
-from text_capture import get_selected_text
 
-
-# ---------------- SYSTEM INIT ----------------
 popup = SmartPopup()
-mouse = MouseTracker()
 
 
-# ---------------- MAIN ACTION ----------------
-def on_hotkey_trigger():
-    print("\n🔥 HOTKEY TRIGGERED")
+def on_hotkey():
+    print("🔥 HOTKEY CALLBACK FIRED")
 
-    text = get_selected_text()
+    popup.open("Hello from hotkey!")
+ 
 
-    print(f"[DEBUG] Highlighted text: {repr(text)}")
-
-    if not text.strip():
-        text = "No text selected"
-
-    x, y = mouse.get_position()
-    print(f"[MOUSE POSITION] ({x}, {y})")
-
-    # update UI FIRST
-    popup.text_box.delete("1.0", "end")
-    popup.text_box.insert("1.0", text)
-
-    # then open popup safely
-    popup.root.after(1, lambda: popup.open(x, y))
-
-
-# ---------------- START SYSTEM ----------------
 if __name__ == "__main__":
 
-    print("===================================")
-    print(" SMART CLICK MAIN SYSTEM STARTING")
-    print("===================================\n")
+    print("SMART CLICK RUNNING")
 
-    # Start hotkey listener
-    hotkey = HotkeyManager("b")  # Cmd/Ctrl + Shift + B
-    hotkey.start(on_hotkey_trigger)
+    hotkey = HotkeyManager("b")
+    hotkey.start(on_hotkey)
 
-    print("System running...")
-    print("Press hotkey to trigger popup\n")
-
-    # Run popup UI loop (IMPORTANT: must block main thread)
     popup.run()
