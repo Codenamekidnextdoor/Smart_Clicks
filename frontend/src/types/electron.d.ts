@@ -7,6 +7,7 @@ export interface ElectronAPI {
   onTextSelected: (callback: (data: { text: string; x: number; y: number }) => void) => void;
   closePopup: () => void;
   moveWindow: (x: number, y: number) => void;
+  getWindowPosition: () => Promise<{ x: number; y: number }>;
   minimizeWindow: () => void;
   maximizeWindow: () => void;
   closeWindow: () => void;

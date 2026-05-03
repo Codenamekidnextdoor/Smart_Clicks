@@ -33,7 +33,7 @@ export const useChatStore = create<ChatStore>()(
       // Actions
       loadMessages: async (sessionId) => {
         console.log('[ChatStore] Loading messages for session:', sessionId);
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: null, messages: [] });
         
         try {
           const messages = await api.getSessionMessages(sessionId);

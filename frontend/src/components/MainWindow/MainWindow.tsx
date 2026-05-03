@@ -5,31 +5,42 @@
 
 import { useEffect, useState } from 'react';
 import { useAppStore } from '../../stores/appStore';
+import { useChatStore } from '../../stores/chatStore';
 import { ControlPanel } from './ControlPanel';
 import { SessionHistory } from './SessionHistory';
 import { InfoCards } from './InfoCards';
 import { StatusIndicator } from './StatusIndicator';
-import { Popup } from '../Popup';
-import type { ActionType } from '../../types';
+import { ChatBubble } from '../Popup/ChatBubble';
+import { LoadingSpinner } from '../shared';
+import type { ActionType, Session } from '../../types';
 
 export function MainWindow() {
   const { enabled, loadSessions } = useAppStore();
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 400, y: 300 });
+  const { messages, isLoading, loadMessages, sendMessage } = useChatStore();
+  const [activeSession, setActiveSession] = useState<Session | null>(null);
+  const [chatInput, setChatInput] = useState('');
 
   useEffect(() => {
-    // Load sessions on mount
     loadSessions();
   }, [loadSessions]);
 
-  const handleAction = (action: ActionType, text: string) => {
-    console.log('Action:', action, 'Text:', text);
-    // TODO: Implement actual action handling
+  const handleSessionClick = async (session: Session) => {
+    setActiveSession(session);
+    await loadMessages(session.id);
   };
 
-  const handleTestPopup = () => {
-    setPopupPosition({ x: window.innerWidth / 2 - 150, y: window.innerHeight / 2 - 150 });
-    setShowPopup(true);
+  const handleSend = async () => {
+    if (!chatInput.trim() || !activeSession) return;
+    const msg = chatInput.trim();
+    setChatInput('');
+    await sendMessage(activeSession.id, msg, activeSession.selected_text);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
@@ -52,41 +63,72 @@ export function MainWindow() {
           {/* Left Column - Controls & History */}
           <div className="lg:col-span-1 space-y-6">
             <ControlPanel />
-            <SessionHistory />
+            <SessionHistory onSessionClick={handleSessionClick} />
           </div>
 
-          {/* Right Column - Info Cards */}
+          {/* Right Column */}
           <div className="lg:col-span-2">
-            <InfoCards />
-          </div>
-        </div>
+            {activeSession ? (
+              <div className="bg-bg-surface border border-border rounded-xl flex flex-col h-[600px]">
+                {/* Session header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-text-tertiary mb-0.5">Selected text</p>
+                    <p className="text-sm text-text truncate italic">
+                      "{activeSession.selected_text.substring(0, 80)}{activeSession.selected_text.length > 80 ? '…' : ''}"
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveSession(null)}
+                    className="ml-4 text-text-tertiary hover:text-text transition-colors text-lg leading-none"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-        {/* Test Popup Button */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleTestPopup}
-            className="
-              px-6 py-3 rounded-lg
-              bg-accent/10 hover:bg-accent/20
-              border border-accent
-              text-accent font-medium
-              transition-all duration-200
-            "
-          >
-            🧪 Test Popup (Demo)
-          </button>
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {isLoading ? (
+                    <div className="flex justify-center py-8"><LoadingSpinner /></div>
+                  ) : messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-text-tertiary text-sm">
+                      No messages in this session yet.
+                    </div>
+                  ) : (
+                    messages.map((msg) => (
+                      <ChatBubble key={msg.id} message={msg} isStreaming={false} />
+                    ))
+                  )}
+                </div>
+
+                {/* Input */}
+                <div className="p-3 border-t border-border flex gap-2">
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Continue the conversation…"
+                    className="
+                      flex-1 bg-bg-surface2 border border-border rounded-lg
+                      px-3 py-2 text-sm text-text placeholder-text-tertiary
+                      focus:outline-none focus:border-accent
+                    "
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!chatInput.trim() || isLoading}
+                    className="px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium disabled:opacity-40 hover:bg-accent/90 transition-colors"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <InfoCards />
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Popup */}
-      {showPopup && (
-        <Popup
-          selectedText="This is a sample text that was selected. You can ask questions about it, summarize it, rewrite it, or get an explanation!"
-          position={popupPosition}
-          onClose={() => setShowPopup(false)}
-          onAction={handleAction}
-        />
-      )}
     </div>
   );
 }

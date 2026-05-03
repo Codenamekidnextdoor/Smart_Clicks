@@ -275,6 +275,15 @@ app.whenReady().then(() => {
     }
   });
 
+  // Return the popup window's current screen position
+  ipcMain.handle('get-window-position', () => {
+    if (popupWindow && !popupWindow.isDestroyed()) {
+      const [x, y] = popupWindow.getPosition();
+      return { x, y };
+    }
+    return { x: 0, y: 0 };
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
