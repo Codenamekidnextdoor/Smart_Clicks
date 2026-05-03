@@ -1,0 +1,13 @@
+# FastAPI Backend Requirements
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+websockets>=14.0
+pydantic>=2.10.0
+python-dotenv>=1.0.0
+
+# Existing dependencies (from main requirements.txt)
+# These are needed for the backend API to work
+pyperclip>=1.8.2
+pywin32>=311
+pynput>=1.7.6
