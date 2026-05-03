@@ -15,6 +15,7 @@ def get_selected_text():
         # Store old clipboard
         previous_clipboard = pyperclip.paste()
 
+        # Small settle time before simulating the key
         time.sleep(0.05)
 
         # Simulate copy shortcut (Cmd+C on macOS, Ctrl+C elsewhere)
@@ -22,8 +23,8 @@ def get_selected_text():
             keyboard.press('c')
             keyboard.release('c')
 
-        # Give the OS time to update clipboard
-        time.sleep(0.2)
+        # macOS needs more time for the clipboard to update than Windows/Linux
+        time.sleep(0.35 if _IS_MAC else 0.2)
 
         selected_text = pyperclip.paste()
 
@@ -34,4 +35,8 @@ def get_selected_text():
 
     except Exception as e:
         print(f"[TEXT CAPTURE ERROR] {e}")
+        # On macOS a common cause is missing Accessibility permission
+        if _IS_MAC:
+            print("[TEXT CAPTURE] On macOS, grant Accessibility access:")
+            print("  System Settings → Privacy & Security → Accessibility → add Terminal (or your app)")
         return ""
