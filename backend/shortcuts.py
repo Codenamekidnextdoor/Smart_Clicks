@@ -1,23 +1,30 @@
 from pynput import keyboard
-import threading
+import platform
 
 
 class HotkeyManager:
     def __init__(self, key="b"):
-        self.key = key
         self.callback = None
+
+        system = platform.system()
+
+        if system == "Darwin":
+            self.hotkey = f"<cmd>+<shift>+{key}"
+        else:
+            self.hotkey = f"<ctrl>+<shift>+{key}"
+
+    def _trigger(self):
+        print("[HOTKEY TRIGGERED]")
+        if self.callback:
+            self.callback()
 
     def start(self, callback):
         self.callback = callback
 
-        def on_press(key):
-            try:
-                if key.char == self.key:
-                    print("[HOTKEY TRIGGERED]")
-                    if self.callback:
-                        self.callback()
-            except:
-                pass
+        self.listener = keyboard.GlobalHotKeys({
+            self.hotkey: self._trigger
+        })
 
-        listener = keyboard.Listener(on_press=on_press)
-        listener.start()
+        self.listener.start()
+
+        print(f"[HOTKEY REGISTERED] {self.hotkey}")

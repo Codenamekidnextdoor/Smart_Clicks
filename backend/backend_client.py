@@ -10,7 +10,7 @@ def on_hotkey():
     print("🔥 HOTKEY CALLBACK FIRED")
 
     popup.open("Hello from hotkey!")
-
+ 
 
 if __name__ == "__main__":
 
