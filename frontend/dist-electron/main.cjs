@@ -127,6 +127,7 @@ function createPopupWindow(text, screenX, screenY) {
     const winH = 560;
     const clampedX = Math.min(Math.max(screenX, bounds.x + 8), bounds.x + bounds.width - winW - 8);
     const clampedY = Math.min(Math.max(screenY, bounds.y + 8), bounds.y + bounds.height - winH - 8);
+    const isMac = process.platform === 'darwin';
     popupWindow = new electron_1.BrowserWindow({
         width: winW,
         height: winH,
@@ -134,9 +135,12 @@ function createPopupWindow(text, screenX, screenY) {
         y: clampedY,
         frame: false,
         transparent: true,
+        hasShadow: false, // required for correct transparency on macOS
         alwaysOnTop: true,
         skipTaskbar: true,
         resizable: false,
+        // On macOS use 'floating' panel level so popup stays above full-screen apps
+        ...(isMac ? { type: 'panel' } : {}),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -170,8 +174,9 @@ function registerHotkeys() {
         // simulate Ctrl+C.  Without this the backend copies an empty selection.
         if (mainWindow && mainWindow.isFocused()) {
             mainWindow.blur();
-            // Give the OS ~150 ms to transfer focus back to the source window.
-            await new Promise((r) => setTimeout(r, 150));
+            // macOS needs more time to transfer focus back than Windows/Linux
+            const blurDelay = process.platform === 'darwin' ? 300 : 150;
+            await new Promise((r) => setTimeout(r, blurDelay));
         }
         // Ask the Python backend to capture currently-selected text via Ctrl+C simulation.
         const selectedText = await captureTextFromBackend();
@@ -221,6 +226,18 @@ function captureTextFromBackend() {
 // App Lifecycle
 // ============================================================================
 electron_1.app.whenReady().then(() => {
+    // On macOS, check for Accessibility permission needed for text capture via pynput.
+    // Prompt the user immediately so they know what to enable.
+    if (process.platform === 'darwin') {
+        const { systemPreferences } = require('electron');
+        const trusted = systemPreferences.isTrustedAccessibilityClient(false);
+        if (!trusted) {
+            // Calling with `true` shows the system prompt asking user to grant access
+            systemPreferences.isTrustedAccessibilityClient(true);
+            console.warn('[macOS] Accessibility permission not granted — text capture will not work.');
+            console.warn('[macOS] Go to: System Settings → Privacy & Security → Accessibility → add Terminal');
+        }
+    }
     createMainWindow();
     createTray();
     registerHotkeys();
