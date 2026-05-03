@@ -42,8 +42,8 @@ class WatsonxClient:
         self.project_id = project_id
         self.endpoint = endpoint or "https://us-south.ml.cloud.ibm.com"
         
-        # Default model
-        self.model_id = "ibm/granite-13b-chat-v2"
+        # Default model — llama-3-3-70b is the best instruct model available in this project
+        self.model_id = "meta-llama/llama-3-3-70b-instruct"
         
         # Initialize credentials
         self.credentials = {

@@ -1,28 +1,33 @@
+import sys
 import time
 import pyperclip
 from pynput.keyboard import Key, Controller
 
 keyboard = Controller()
 
+# macOS uses Cmd+C; Windows and Linux use Ctrl+C
+_IS_MAC = sys.platform == 'darwin'
+_MODIFIER = Key.cmd if _IS_MAC else Key.ctrl
+
 
 def get_selected_text():
     try:
-        # store old clipboard
+        # Store old clipboard
         previous_clipboard = pyperclip.paste()
 
         time.sleep(0.05)
 
-        # trigger copy
-        with keyboard.pressed(Key.cmd):
+        # Simulate copy shortcut (Cmd+C on macOS, Ctrl+C elsewhere)
+        with keyboard.pressed(_MODIFIER):
             keyboard.press('c')
             keyboard.release('c')
 
-        # IMPORTANT: give OS time to update clipboard
+        # Give the OS time to update clipboard
         time.sleep(0.2)
 
         selected_text = pyperclip.paste()
 
-        # restore clipboard safely
+        # Restore previous clipboard content
         pyperclip.copy(previous_clipboard)
 
         return selected_text.strip()

@@ -91,7 +91,7 @@ class SmartClickApp:
         logger.info("Text detector initialized")
 
         # Hotkey manager — Ctrl+Shift+Z captures selected text
-        self.hotkey = HotkeyManager(hotkey="ctrl+shift+z")
+        self.hotkey = HotkeyManager(key="z")
         logger.info("Hotkey manager initialized")
         
         # Current session
