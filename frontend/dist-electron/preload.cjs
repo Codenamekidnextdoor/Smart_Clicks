@@ -19,6 +19,8 @@ const electronAPI = {
     closePopup: () => electron_1.ipcRenderer.send('close-popup'),
     // Move the OS-level window (used for unrestricted drag across full screen)
     moveWindow: (x, y) => electron_1.ipcRenderer.send('move-window', { x, y }),
+    // Get the current OS-level window position
+    getWindowPosition: () => electron_1.ipcRenderer.invoke('get-window-position'),
     // Window controls
     minimizeWindow: () => electron_1.ipcRenderer.send('minimize-window'),
     maximizeWindow: () => electron_1.ipcRenderer.send('maximize-window'),

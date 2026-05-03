@@ -7,7 +7,11 @@ import { useAppStore } from '../../stores/appStore';
 import { Card, LoadingSpinner } from '../shared';
 import type { Session } from '../../types';
 
-export function SessionHistory() {
+interface SessionHistoryProps {
+  onSessionClick: (session: Session) => void;
+}
+
+export function SessionHistory({ onSessionClick }: SessionHistoryProps) {
   const { sessions, loading, loadSessions } = useAppStore();
 
   const formatTimeAgo = (timestamp: string): string => {
@@ -24,11 +28,6 @@ export function SessionHistory() {
     } catch {
       return '';
     }
-  };
-
-  const handleSessionClick = (session: Session) => {
-    // TODO: Implement session reopening
-    console.log('Open session:', session.id);
   };
 
   return (
@@ -58,11 +57,11 @@ export function SessionHistory() {
           sessions.map((session) => (
             <button
               key={session.id}
-              onClick={() => handleSessionClick(session)}
+              onClick={() => onSessionClick(session)}
               className="
                 w-full text-left p-3 rounded-lg
                 bg-bg-surface2 hover:bg-bg-surface3
-                border border-transparent hover:border-border
+                border border-transparent hover:border-accent/40
                 transition-all duration-200
                 group
               "

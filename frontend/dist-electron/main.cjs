@@ -253,6 +253,14 @@ electron_1.app.whenReady().then(() => {
             popupWindow.setPosition(Math.round(x), Math.round(y));
         }
     });
+    // Return the popup window's current screen position
+    electron_1.ipcMain.handle('get-window-position', () => {
+        if (popupWindow && !popupWindow.isDestroyed()) {
+            const [x, y] = popupWindow.getPosition();
+            return { x, y };
+        }
+        return { x: 0, y: 0 };
+    });
     electron_1.app.on('activate', () => {
         if (electron_1.BrowserWindow.getAllWindows().length === 0) {
             createMainWindow();

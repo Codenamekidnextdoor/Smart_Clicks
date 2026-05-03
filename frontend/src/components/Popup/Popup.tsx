@@ -34,13 +34,12 @@ export function Popup({ selectedText, position, onClose, onAction }: PopupProps)
       .catch(() => setSessionId(null));
   }, [selectedText]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // screen.availLeft/Top gives the OS window's current top-left in screen coords.
-    // We record where the mouse was and where the window was at drag start.
-    const winX = (window.screen as any).availLeft ?? 0;
-    const winY = (window.screen as any).availTop ?? 0;
+  const handleMouseDown = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Get the real OS window position from Electron before drag starts
+    const pos = await window.electron?.getWindowPosition() ?? { x: 0, y: 0 };
     setIsDragging(true);
-    setDragStart({ mouseX: e.screenX, mouseY: e.screenY, winX, winY });
+    setDragStart({ mouseX: e.screenX, mouseY: e.screenY, winX: pos.x, winY: pos.y });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
