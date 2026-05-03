@@ -154,7 +154,7 @@ async def health():
         "ai_client": "mock" if isinstance(ai_client, MockWatsonxClient) else "watsonx"
     }
 
-
+✦ Smart Click
 # ============================================================================
 # Session Endpoints
 # ============================================================================
