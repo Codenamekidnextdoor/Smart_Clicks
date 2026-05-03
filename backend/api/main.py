@@ -76,7 +76,7 @@ async def lifespan(app: FastAPI):
     # Set WATSONX_API_KEY / WATSONX_PROJECT_ID / WATSONX_ENDPOINT env vars to override.
     _default_api_key    = os.environ.get('WATSONX_API_KEY',    'Gp3l8WFWhrBDuHQkv9lVLABbEXbQLJ0ZquW67oo4Yd8T')
     _default_project_id = os.environ.get('WATSONX_PROJECT_ID', '25be7a94-4de9-4add-ac4a-4eb52df5c6cf')
-    _default_endpoint   = os.environ.get('WATSONX_ENDPOINT',   'https://us-south.ml.cloud.ibm.com')
+    _default_endpoint   = os.environ.get('WATSONX_ENDPOINT',   'https://us-south.ml.cloud.ibm.com/')
 
     if not db.get_setting('watsonx_api_key'):
         db.set_setting('watsonx_api_key', _default_api_key)
@@ -154,7 +154,7 @@ async def health():
         "ai_client": "mock" if isinstance(ai_client, MockWatsonxClient) else "watsonx"
     }
 
-✦ Smart Click
+# Smart Click
 # ============================================================================
 # Session Endpoints
 # ============================================================================
