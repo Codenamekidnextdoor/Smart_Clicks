@@ -1,10 +1,9 @@
 from pynput import keyboard
 import threading
-import time
 import platform
 
 class HotkeyManager:
-    def __init__(self, key="b"):
+    def __init__(self, key="z"):
         self.key = key
         self.callback = None
         self.listener = None
@@ -30,6 +29,9 @@ class HotkeyManager:
         })
 
         self.listener.start()
+
+        # IMPORTANT: keep program alive
+        self.listener.join()
 
     def stop(self):
         if self.listener:
