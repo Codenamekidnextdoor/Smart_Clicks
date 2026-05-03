@@ -1,42 +1,32 @@
-import pyperclip
-import pyautogui
 import time
-import logging
+import pyperclip
+from pynput.keyboard import Key, Controller
 
-logger = logging.getLogger(__name__)
+keyboard = Controller()
+
 
 def get_selected_text():
-    """
-    Copy currently highlighted text from any active application.
-    Returns the text, or empty string if nothing was selected.
-    """
-    # 1. Save existing clipboard content
     try:
-        old = pyperclip.paste()
-    except Exception:
-        old = ""
+        # store old clipboard
+        previous_clipboard = pyperclip.paste()
 
-    # 2. Clear clipboard so we can detect a new copy
-    try:
-        pyperclip.copy("")
         time.sleep(0.05)
-    except Exception:
-        pass
 
-    # 3. Send Ctrl+C to the active window
-    pyautogui.hotkey("ctrl", "c")
-    time.sleep(0.2)   # wait for clipboard to update
+        # trigger copy
+        with keyboard.pressed(Key.cmd):
+            keyboard.press('c')
+            keyboard.release('c')
 
-    # 4. Read whatever landed in the clipboard
-    selected = pyperclip.paste()
+        # IMPORTANT: give OS time to update clipboard
+        time.sleep(0.2)
 
-    # 5. Restore the original clipboard (polite)
-    try:
-        pyperclip.copy(old)
+        selected_text = pyperclip.paste()
+
+        # restore clipboard safely
+        pyperclip.copy(previous_clipboard)
+
+        return selected_text.strip()
+
     except Exception as e:
-        logger.warning(f"Could not restore clipboard: {e}")
-
-    # 6. If the clipboard didn't change, nothing was selected
-    if not selected or selected == old:
+        print(f"[TEXT CAPTURE ERROR] {e}")
         return ""
-    return selected
